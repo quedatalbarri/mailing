@@ -24,11 +24,14 @@ func main() {
 	byteValue, _ := ioutil.ReadAll(jsonFile)
 	var result map[string]string
 	json.Unmarshal([]byte(byteValue), &result)
-	url := result["born"]
-	fmt.Println(url)
-
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
+		return c.String(http.StatusOK, "Welcome to quedat al barri!")
+	})
+	e.GET("/:barri", func(c echo.Context) error {
+		barri := c.Param("barri")
+		url := result[barri]
+		fmt.Println(url)
 		return c.Redirect(http.StatusMovedPermanently, url)
 	})
 

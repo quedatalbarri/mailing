@@ -21,6 +21,7 @@ const (
 
 type barri struct {
 	Name string `json:"name"`
+	Url  string `json:"url"`
 }
 
 func hello(c echo.Context) error {
@@ -33,7 +34,7 @@ func addBarri(c echo.Context) error {
 	if err := c.Bind(b); err != nil {
 		return err
 	}
-	fmt.Println("Barri: ", b.Name)
+	fmt.Println("Barri: ", b.Name, " Url: ", b.Url)
 	//TODO add barrio to a database
 	return c.JSON(http.StatusCreated, b)
 }

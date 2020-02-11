@@ -1,0 +1,14 @@
+.qb-navbar-brand {
+    padding: 0 1rem !important
+}
+
+.qb-logo {
+    filter: brightness(0) invert(1);
+    margin-right: 3px;
+}
+
+.qb-link {
+    color: #c1bfbf;
+    text-decoration: none;
+    padding: 0 4px;
+}

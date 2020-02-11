@@ -7,9 +7,10 @@
 import React, { Fragment } from "react"
 import { useAuth0 } from "../react-auth0-spa"
 import NewBarri from './NewBarri'
-
-//const config = require('../config.json')
-const endpoint = "http://localhost:1323"
+import Row from 'react-bootstrap/Row'
+import Col from 'react-bootstrap/Col'
+import ListGroup from 'react-bootstrap/ListGroup'
+import './styles/BarrisListItem.css'
 
 const Barris = () => {
   const { loading, user } = useAuth0()
@@ -22,9 +23,20 @@ const Barris = () => {
   }
   return (
     <Fragment>
-      <h3>Barrios creados</h3>
-      <p>Todo- list aqui</p>
-      <NewBarri/>
+      <Row className="mt-5">
+        <Col>
+          <h3>Barrios creados</h3>
+          <p>Todo- get list from database. list aqui:</p>
+          <ListGroup variant="flush" className="qb-list">
+            <ListGroup.Item>Born<div className="qb-list-url">"https://barcelona.us4.list-manage.com/subscribe?u=aafafb6a3fe6cd8bb1c071405&id=be49b3c618"</div></ListGroup.Item>
+            <ListGroup.Item>Gotic</ListGroup.Item>
+            <ListGroup.Item>Dapibus ac facilisis in</ListGroup.Item>
+          </ListGroup>
+        </Col>
+        <Col>
+          <NewBarri/>
+        </Col>
+      </Row>
     </Fragment>
   );
 };

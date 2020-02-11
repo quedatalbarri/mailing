@@ -1,0 +1,9 @@
+.qb-list .list-group-item {
+    margin-bottom: 0;
+}
+
+.qb-list-url {
+    color: grey;
+    font-size: 11px;
+    padding-left: 1px;
+}

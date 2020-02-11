@@ -35,22 +35,12 @@ func addBarri(c echo.Context) error {
 		return err
 	}
 	fmt.Println("Barri: ", b.Name, " Url: ", b.Url)
-	//TODO add barrio to a database
+	addBarriToDB(b.Name)
 	return c.JSON(http.StatusCreated, b)
 }
 
-// func addBarriToDB() {
-// 	sqlStatement := "INSERT INTO barris (name, salry,age)VALUES ($1, $2, $3)"
-// 	res, err := db.Query(sqlStatement, u.Name, u.Salary, u.Age)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	} else {
-// 		fmt.Println(res)
-// 		return c.JSON(http.StatusCreated, u)
-// 	}
-// }
-
-func connectToDatabase() {
+func addBarriToDB(name string) {
+	//connect to database
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
@@ -58,16 +48,38 @@ func connectToDatabase() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	if err = db.Ping(); err != nil {
 		panic(err)
 	} else {
 		fmt.Println("DB Connected...")
 	}
+
+	sqlStatement := "INSERT INTO barris (name, url)VALUES ($1, $2)"
+	res, err := db.Query(sqlStatement, name, "b.Url")
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(res)
+	}
 }
 
+// func connectToDatabase() {
+// 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
+// 		"password=%s dbname=%s sslmode=disable",
+// 		host, port, user, password, dbname)
+// 	db, err := sql.Open("postgres", psqlInfo)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// 	if err = db.Ping(); err != nil {
+// 		panic(err)
+// 	} else {
+// 		fmt.Println("DB Connected...")
+// 	}
+// }
+
 func main() {
-	connectToDatabase()
 	e := echo.New()
 
 	// CORS restricted- Allows requests

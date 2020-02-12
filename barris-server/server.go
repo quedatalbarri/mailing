@@ -19,43 +19,37 @@ const (
 	dbname   = "quedatalbarri"
 )
 
-type barri struct {
+type Barri struct {
 	Name string `json:"name"`
 	Url  string `json:"url"`
+}
+
+var (
+	name string
+	url  string
+)
+
+type Barris struct {
+	Barris []Barri `json:"barris"`
 }
 
 func hello(c echo.Context) error {
 	return c.String(http.StatusOK, "Welcome a barri server!")
 }
 
-func addBarri(c echo.Context) error {
-	fmt.Println("Funcion addBarri")
-	b := &barri{}
+func (s *Server) addBarri(c echo.Context) error {
+	b := &Barri{}
 	if err := c.Bind(b); err != nil {
 		return err
 	}
-	fmt.Println("Barri: ", b.Name, " Url: ", b.Url)
-	addBarriToDB(b.Name)
+	fmt.Println("Add Barri: ", b.Name, " Url: ", b.Url)
+	addBarriToDB(b.Name, b.Url, s.DB)
 	return c.JSON(http.StatusCreated, b)
 }
 
-func addBarriToDB(name string) {
-	//connect to database
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
-	db, err := sql.Open("postgres", psqlInfo)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err = db.Ping(); err != nil {
-		panic(err)
-	} else {
-		fmt.Println("DB Connected...")
-	}
-
+func addBarriToDB(name string, url string, db *sql.DB) {
 	sqlStatement := "INSERT INTO barris (name, url)VALUES ($1, $2)"
-	res, err := db.Query(sqlStatement, name, "b.Url")
+	res, err := db.Query(sqlStatement, name, url)
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -63,23 +57,51 @@ func addBarriToDB(name string) {
 	}
 }
 
-// func connectToDatabase() {
-// 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
-// 		"password=%s dbname=%s sslmode=disable",
-// 		host, port, user, password, dbname)
-// 	db, err := sql.Open("postgres", psqlInfo)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
+func (s *Server) getBarris(c echo.Context) error {
+	fmt.Println("Funcion getBarris")
+	sqlStatement := "SELECT name, url FROM barris"
+	rows, err := s.DB.Query(sqlStatement)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer rows.Close()
+	result := Barris{}
 
-// 	if err = db.Ping(); err != nil {
-// 		panic(err)
-// 	} else {
-// 		fmt.Println("DB Connected...")
-// 	}
-// }
+	for rows.Next() {
+		aBarri := Barri{}
+		err := rows.Scan(&aBarri.Name, &aBarri.Url)
+		if err != nil {
+			log.Fatal(err)
+		}
+		result.Barris = append(result.Barris, aBarri)
+		fmt.Println(result)
+	}
+	return c.JSON(http.StatusCreated, result)
+}
+
+func connectToDatabase() *sql.DB {
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
+		"password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err = db.Ping(); err != nil {
+		panic(err)
+	} else {
+		fmt.Println("DB Connected...")
+	}
+	return db
+}
+
+type Server struct {
+	DB *sql.DB
+}
 
 func main() {
+	db := connectToDatabase()
+	server := &Server{db}
 	e := echo.New()
 
 	// CORS restricted- Allows requests
@@ -87,7 +109,8 @@ func main() {
 
 	//ROUTES
 	e.GET("/", hello)
-	e.POST("/addBarri", addBarri)
+	e.GET("/getBarris", server.getBarris)
+	e.POST("/addBarri", server.addBarri)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }

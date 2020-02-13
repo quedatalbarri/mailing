@@ -36,7 +36,7 @@ type Barris struct {
 }
 
 func hello(c echo.Context) error {
-	return c.String(http.StatusOK, "Welcome a barri server!")
+	return c.String(http.StatusOK, "Welcome to barri server!")
 }
 
 func (s *Server) addBarri(c echo.Context) error {
@@ -61,7 +61,13 @@ func addBarriToDB(name string, url string, telegramToken string, email string, d
 
 func (s *Server) getBarris(c echo.Context) error {
 	fmt.Println("Funcion getBarris")
-	sqlStatement := "SELECT name, url FROM barris"
+	email := c.QueryParam("email")
+	fmt.Println("email getBarris: ", email)
+	sqlStatement := "SELECT name, url, telegram_token FROM barris"
+	if email != "" {
+		sqlStatement = "SELECT name, url, telegram_token FROM barris WHERE admin = '" + email + "'"
+	}
+
 	rows, err := s.DB.Query(sqlStatement)
 	if err != nil {
 		fmt.Println(err)
@@ -71,7 +77,7 @@ func (s *Server) getBarris(c echo.Context) error {
 
 	for rows.Next() {
 		aBarri := Barri{}
-		err := rows.Scan(&aBarri.Name, &aBarri.Url)
+		err := rows.Scan(&aBarri.Name, &aBarri.Url, &aBarri.TelegramToken)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -79,6 +85,37 @@ func (s *Server) getBarris(c echo.Context) error {
 		fmt.Println(result)
 	}
 	return c.JSON(http.StatusCreated, result)
+}
+
+func (s *Server) updateBarri(c echo.Context) error {
+	b := &Barri{}
+	if err := c.Bind(b); err != nil {
+		return err
+	}
+	sqlStatement := "UPDATE barris SET url=$1, telegram_token=$2 WHERE name=$2;"
+	res, err := s.DB.Query(sqlStatement, b.Url, b.TelegramToken, b.Name)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(res)
+	}
+	return c.JSON(http.StatusCreated, b)
+}
+
+func (s *Server) updateBarriToken(c echo.Context) error {
+	b := &Barri{}
+	if err := c.Bind(b); err != nil {
+		return err
+	}
+	fmt.Println("Update Barri: ", b.Name, " b.TelegramToken: ", b.TelegramToken)
+	sqlStatement := "UPDATE barris SET telegram_token=$1 WHERE name=$2;"
+	res, err := s.DB.Query(sqlStatement, b.TelegramToken, b.Name)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(res)
+	}
+	return c.JSON(http.StatusCreated, b)
 }
 
 func connectToDatabase() *sql.DB {
@@ -113,6 +150,7 @@ func main() {
 	e.GET("/", hello)
 	e.GET("/getBarris", server.getBarris)
 	e.POST("/addBarri", server.addBarri)
-
+	e.POST("/updateBarri", server.updateBarriToken)
+	e.POST("/updateBarriToken", server.updateBarriToken)
 	e.Logger.Fatal(e.Start(":1323"))
 }

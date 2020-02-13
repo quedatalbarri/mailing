@@ -20,8 +20,10 @@ const (
 )
 
 type Barri struct {
-	Name string `json:"name"`
-	Url  string `json:"url"`
+	Name          string `json:"name"`
+	Url           string `json:"url"`
+	TelegramToken string `json:"telegramToken"`
+	Email         string `json:"email"`
 }
 
 var (
@@ -42,14 +44,14 @@ func (s *Server) addBarri(c echo.Context) error {
 	if err := c.Bind(b); err != nil {
 		return err
 	}
-	fmt.Println("Add Barri: ", b.Name, " Url: ", b.Url)
-	addBarriToDB(b.Name, b.Url, s.DB)
+	fmt.Println("Add Barri: ", b.Name, " Url: ", b.Url, " b.TelegramToken: ", b.TelegramToken, " Email: ", b.Email)
+	addBarriToDB(b.Name, b.Url, b.TelegramToken, b.Email, s.DB)
 	return c.JSON(http.StatusCreated, b)
 }
 
-func addBarriToDB(name string, url string, db *sql.DB) {
-	sqlStatement := "INSERT INTO barris (name, url)VALUES ($1, $2)"
-	res, err := db.Query(sqlStatement, name, url)
+func addBarriToDB(name string, url string, telegramToken string, email string, db *sql.DB) {
+	sqlStatement := "INSERT INTO barris (name, url, telegram_token, admin) VALUES ($1, $2, $3, $4)"
+	res, err := db.Query(sqlStatement, name, url, telegramToken, email)
 	if err != nil {
 		fmt.Println(err)
 	} else {

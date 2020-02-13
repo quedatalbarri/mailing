@@ -4,37 +4,59 @@
  * In the UI for this component, the user's profile picture, name, and email address is being retrieved
  *  from the user property and displayed on the screen. */
 
-import React, { Fragment } from "react"
+import React, { Fragment, useState } from "react"
 import { useAuth0 } from "../react-auth0-spa"
+import axios from 'axios'
 import NewBarri from './NewBarri'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import ListGroup from 'react-bootstrap/ListGroup'
-import './styles/BarrisListItem.css'
+import './styles/Barris.css'
+//const config = require('../config.json')
+const endpoint = "http://localhost:1323"
+
 
 const Barris = () => {
   const { loading, user } = useAuth0()
+  const [barrisList, setBarrisList] = useState(null);
+  const getBarris = () => {
+    axios.get(endpoint+"/getBarris")
+    .then(res => {
+      debugger
+        console.log(res.data.barris)
+        const listItems = res.data.barris.map((b) => {
+          return <ListGroup.Item>{b.name}<div className="qb-list-url">{b.url}</div></ListGroup.Item>
+        })
+        setBarrisList(
+          <ListGroup variant="flush" className="qb-list">{listItems}</ListGroup>)
+    })
+    .catch(error => {
+        debugger
+    })
+  }
 
   if (!user) {
-    return <div>Registrat</div>;
+    return <Fragment>
+        <Row className="mt-5">
+        <div>Registra't</div>
+        </Row>
+      </Fragment>
   }
   else if (loading) {
     return <div>Loading...</div>;
   }
+  else if (!barrisList) {
+    getBarris()
+  }
   return (
     <Fragment>
       <Row className="mt-5">
-        <Col>
+        <Col md>
           <h3>Barrios creados</h3>
-          <p>Todo- get list from database. list aqui:</p>
-          <ListGroup variant="flush" className="qb-list">
-            <ListGroup.Item>Born<div className="qb-list-url">"https://barcelona.us4.list-manage.com/subscribe?u=aafafb6a3fe6cd8bb1c071405&id=be49b3c618"</div></ListGroup.Item>
-            <ListGroup.Item>Gotic</ListGroup.Item>
-            <ListGroup.Item>Dapibus ac facilisis in</ListGroup.Item>
-          </ListGroup>
+          {barrisList}
         </Col>
-        <Col>
-          <NewBarri/>
+        <Col md>
+          <NewBarri user={user}/>
         </Col>
       </Row>
     </Fragment>

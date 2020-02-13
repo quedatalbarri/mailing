@@ -5,52 +5,50 @@
  *  from the user property and displayed on the screen. */
 
 import React, { Fragment } from "react"
-import { useAuth0 } from "../react-auth0-spa"
 import axios from 'axios'
 import Form from 'react-bootstrap/Form'
-import Row from 'react-bootstrap/Row'
-import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
 import Card from 'react-bootstrap/Card'
 //const config = require('../config.json')
 const endpoint = "http://localhost:1323"
 
-const NewBarri = () => {
+const NewBarri = (props) => {
+  const email = props.user.email
   function handleSubmit(e) {
     e.preventDefault()
     const barri = document.getElementById('barriName').value
     const url = document.getElementById('barriUrl').value
-    axios.post(endpoint+"/addBarri?name="+barri+"&url="+url)
+    const telegramToken = document.getElementById('telegramToken').value
+    if(!barri || !url) {
+        return alert("campo Barri o url vacíos")
+    }
+    axios.post(endpoint+"/addBarri?name="+barri+"&url="+url+"&telegramToken="+telegramToken+"&email="+email)
         .then(res => {
             console.log(res.data.name);
             alert('Barri '+res.data.name+ " recibido en el server")
         })
         .catch(error => {
-            debugger
+            alert(error.message)
         }) 
   }
 
   return (
     <Fragment>
-      <Card>
+      <Card className="qb-card">
         <Card.Body>
             <Card.Title>Crear barrio</Card.Title>
             <Form>
-                <Form.Group as={Row}>
-                    <Form.Label column sm="2">
-                    Barri
-                    </Form.Label>
-                    <Col sm="10">
-                    <Form.Control defaultValue="born" id="barriName"/>
-                    </Col>
+                <Form.Group>
+                    <Form.Label>Barri</Form.Label>
+                    <Form.Control placeholder="ej: born" id="barriName"/>
                 </Form.Group>
-                <Form.Group as={Row}>
-                    <Form.Label column sm="2">
-                    Url
-                    </Form.Label>
-                    <Col sm="10">
-                    <Form.Control defaultValue="barri_url" id="barriUrl"/>
-                    </Col>
+                <Form.Group>
+                    <Form.Label>Url</Form.Label>
+                    <Form.Control placeholder="barri_url" id="barriUrl"/>
+                </Form.Group>
+                <Form.Group>
+                    <Form.Label>Telegram Token</Form.Label>
+                    <Form.Control placeholder="telegram_token" id="telegramToken"/>
                 </Form.Group>
                 <Button variant="primary" type="submit" onClick={handleSubmit}>
                     Crear

@@ -39,16 +39,17 @@ const NewBarri = (props) => {
             <Card.Title>Crear barrio</Card.Title>
             <Form>
                 <Form.Group>
-                    <Form.Label>Barri</Form.Label>
+                    <Form.Label>Barri*</Form.Label>
                     <Form.Control placeholder="ej: born" id="barriName"/>
                 </Form.Group>
                 <Form.Group>
-                    <Form.Label>Url</Form.Label>
+                    <Form.Label>Url*</Form.Label>
                     <Form.Control placeholder="barri_url" id="barriUrl"/>
                 </Form.Group>
                 <Form.Group>
                     <Form.Label>Telegram Token</Form.Label>
                     <Form.Control placeholder="telegram_token" id="telegramToken"/>
+                    <Form.Text className="text-muted">Opcional. Puedes añadirlo luego</Form.Text>
                 </Form.Group>
                 <Button variant="primary" type="submit" onClick={handleSubmit}>
                     Crear

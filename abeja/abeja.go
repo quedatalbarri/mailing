@@ -2,9 +2,9 @@ package main
 
 import (
 	"time"
-	"strconv"
 	"bytes"
 	"io/ioutil"
+	"strconv"
 	"text/template"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/calendar/v3"
@@ -54,8 +54,15 @@ func getChimp() *gochimp3.API {
 }
 
 type Event struct {
-	Summary string
-	Description string
+	Summary string `json:"summary,omitempty"`
+	Description string `json:"description,omitempty"`
+	Location string `json:"location,omitempty"`
+	HtmlLink string `json:"link,omitempty"`
+	DateTime string `json:"datetime,omitempty"`
+}
+
+type Week struct {
+	Events []Event `json:"events,omitempty"`
 }
 
 type EmailContent struct {
@@ -63,14 +70,25 @@ type EmailContent struct {
 	Events []Event
 }
 
-
-func makeEmailContent(events *calendar.Events) *EmailContent {
+func MakeEvents(events *calendar.Events) []Event {
 	es := make([]Event, len(events.Items))
 
 	for i, item := range events.Items {
-		es[i] = Event{item.Summary, item.Description}
+		es[i] = Event{
+			item.Summary,
+			item.Description,
+			item.Location,
+			item.HtmlLink,
+			item.Start.DateTime,
+		}
 	}
 
+	return es
+}
+
+
+func makeEmailContent(events *calendar.Events) *EmailContent {
+	es := MakeEvents(events)
 	// TODO: Get dates and time!
 	// date := item.Start.DateTime
 	// if date == "" {
@@ -142,7 +160,6 @@ func main(){
 
 	srv := getCalendarService()
 	client := getChimp()
-
 	events, err := getUpcomingEvents(srv, cal)
 	content := makeEmailContent(events)
 

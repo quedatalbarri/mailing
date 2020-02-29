@@ -10,13 +10,13 @@ const BarrisListItem = (props) => {
               <div class="d-flex w-100 justify-content-between">
                 {props.name}
                 <div>
-                    {!props.telegramToken && 
+                    {!props.telegramChannel && 
                         <Button variant="outline-primary" size="sm" className="qb-list-btn" onClick={() => {
                                 props.setBarriEdited()
                                 props.showTelegramModal()}
                             }
                         >
-                        Conectar con Telegram
+                        Añadir Telegram
                     </Button>
                     }
                     <FiEdit color="grey"
@@ -29,7 +29,7 @@ const BarrisListItem = (props) => {
                 </div>
               </div>
               <div className="qb-list-url">{props.url}</div>
-              {props.telegramToken && <div className="qb-list-url">Telegram Token: {props.telegramToken}</div>}
+              {props.telegramChannel && <div className="qb-list-url">Canal Telegram: {props.telegramChannel}</div>}
             </ListGroup.Item>
     )
  }

@@ -18,11 +18,11 @@ const NewBarri = (props) => {
     e.preventDefault()
     const barri = document.getElementById('barriName').value
     const url = document.getElementById('barriUrl').value
-    const telegramToken = document.getElementById('telegramToken').value
+    const telegramChannelId = document.getElementById('telegramChannelId').value
     if(!barri || !url) {
         return alert("campo Barri o url vacíos")
     }
-    axios.post(endpoint+"/addBarri?name="+barri+"&url="+url+"&telegramToken="+telegramToken+"&email="+email)
+    axios.post(endpoint+"/addBarri?name="+barri+"&url="+url+"&telegramChannelId="+telegramChannelId+"&email="+email)
         .then(res => {
             console.log(res.data.name);
             alert('Barri '+res.data.name+ " recibido en el server")
@@ -47,8 +47,8 @@ const NewBarri = (props) => {
                     <Form.Control placeholder="barri_url" id="barriUrl"/>
                 </Form.Group>
                 <Form.Group>
-                    <Form.Label>Telegram Token</Form.Label>
-                    <Form.Control placeholder="telegram_token" id="telegramToken"/>
+                    <Form.Label>Canal de Telegram</Form.Label>
+                    <Form.Control placeholder="Identificador del canal de telegram" id="telegramChannelId"/>
                     <Form.Text className="text-muted">Opcional. Puedes añadirlo luego</Form.Text>
                 </Form.Group>
                 <Button variant="primary" type="submit" onClick={handleSubmit}>

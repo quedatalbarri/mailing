@@ -63,9 +63,8 @@ func addBarriToDB(name string, url string, telegramChannelId string, email strin
 }
 
 func (s *Server) getBarris(c echo.Context) error {
-	fmt.Println("Funcion getBarris")
 	email := c.QueryParam("email")
-	fmt.Println("email getBarris: ", email)
+	fmt.Println("getBarris del usuario con email : ", email)
 	sqlStatement := "SELECT name, url, telegram_channel FROM barris"
 	if email != "" {
 		sqlStatement = "SELECT name, url, telegram_channel FROM barris WHERE admin = '" + email + "'"
@@ -97,22 +96,6 @@ func (s *Server) updateBarri(c echo.Context) error {
 	}
 	sqlStatement := "UPDATE barris SET url=$1, telegram_channel=$2 WHERE name=$2;"
 	res, err := s.DB.Query(sqlStatement, b.Url, b.TelegramChannelId, b.Name)
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		fmt.Println(res)
-	}
-	return c.JSON(http.StatusCreated, b)
-}
-
-func (s *Server) updateBarriChannel(c echo.Context) error {
-	b := &Barri{}
-	if err := c.Bind(b); err != nil {
-		return err
-	}
-	fmt.Println("Update Barri: ", b.Name, " b.TelegramChannelId: ", b.TelegramChannelId)
-	sqlStatement := "UPDATE barris SET telegram_channel=$1 WHERE name=$2;"
-	res, err := s.DB.Query(sqlStatement, b.TelegramChannelId, b.Name)
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -156,6 +139,34 @@ func getChatMember(c echo.Context) error {
 	return c.JSON(http.StatusCreated, member)
 }
 
+func (s *Server) getBarriChannel(c echo.Context) error {
+	barriName := c.Param("barri")
+	//barriName := c.QueryParam("barri")
+	// if barriName == "" {
+	// 	return
+	// }
+	sqlStatement := "SELECT name, telegram_channel FROM barris WHERE name = '" + barriName + "'"
+
+	rows, err := s.DB.Query(sqlStatement)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer rows.Close()
+	result := Barris{}
+
+	for rows.Next() {
+		aBarri := Barri{}
+		err := rows.Scan(&aBarri.Name, &aBarri.TelegramChannelId)
+		if err != nil {
+			log.Fatal(err)
+		}
+		result.Barris = append(result.Barris, aBarri)
+		fmt.Println(result)
+	}
+	return c.JSON(http.StatusCreated, result)
+
+}
+
 func connectToDatabase() *sql.DB {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
@@ -188,8 +199,8 @@ func main() {
 	e.GET("/", hello)
 	e.GET("/getBarris", server.getBarris)
 	e.POST("/addBarri", server.addBarri)
-	e.POST("/updateBarri", server.updateBarriChannel)
-	e.POST("/updateBarriChannel", server.updateBarriChannel)
+	e.POST("/updateBarri", server.updateBarri)
 	e.GET("/getChatMember/:channel", getChatMember)
+	e.GET("/getBarriChannel/:barri", server.getBarriChannel)
 	e.Logger.Fatal(e.Start(":1323"))
 }

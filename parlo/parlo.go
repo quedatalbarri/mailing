@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"time"
 
@@ -53,8 +54,8 @@ func main() {
 	if errEnv != nil {
 		log.Fatalf("Error loading .env file")
 	}
-	//telegram api:
 
+	//telegram api:
 	poller := &tb.LongPoller{Timeout: 10 * time.Second}
 	b, err := tb.NewBot(tb.Settings{
 		Token: os.Getenv("TELEGRAM_TOKEN"),
@@ -67,8 +68,9 @@ func main() {
 		return
 	}
 
-	b.Handle("/hello", func(m *tb.Message) {
-		b.Send(m.Sender, "hello world")
+	//TODO abstraccion lenguas, avui, today...
+	b.Handle("/hoy", func(m *tb.Message) {
+		b.Send(m.Sender, "enviar eventos de hoy")
 	})
 	b.Handle(tb.OnText, func(m *tb.Message) {
 		fmt.Println("OnText...")
@@ -76,28 +78,14 @@ func main() {
 			ParseMode: "Markdown"},
 		)
 	})
+
 	b.Handle(tb.OnChannelPost, func(m *tb.Message) {
 		fmt.Println("OnChannelPost...")
 		b.Send(m.Chat, eventsText, &tb.SendOptions{
 			ParseMode: "Markdown"},
 		)
-		//b.Send(m.Chat, "Hola, soy el bot")
-	})
-	b.Handle(tb.OnUserJoined, func(m *tb.Message) {
-		fmt.Println("OnUserJoined...")
-		//no funciona
-	})
-	b.Handle(tb.OnAddedToGroup, func(m *tb.Message) {
-		fmt.Println("OnAddedToGroup ...")
-		//no funciona OnAddedToGroup
-	})
-	//new_chat_members
-	b.Handle(tb.OnCallback, func(m *tb.Message) {
-		fmt.Println("OnCallback...")
-	})
-	b.Handle(tb.OnQuery, func(m *tb.Message) {
-		fmt.Println("OnQuery ...")
 	})
 
 	b.Start()
+
 }

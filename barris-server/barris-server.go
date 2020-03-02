@@ -174,13 +174,9 @@ func (s *Server) getBarriChannel(c echo.Context) error {
 }
 
 func sendTelegramMessage(c echo.Context) error {
-	//loading enviroment variables
-	errEnv := godotenv.Load(".env")
-	if errEnv != nil {
-		log.Fatalf("Error loading .env file")
-	}
 	channelName := c.Param("channel")
-	var url = "https://api.telegram.org/bot" + os.Getenv("TELEGRAM_TOKEN") + "/sendMessage?chat_id=@" + channelName + "&text=hols"
+	text := c.QueryParam("text")
+	var url = "https://api.telegram.org/bot" + os.Getenv("TELEGRAM_TOKEN") + "/sendMessage?chat_id=@" + channelName + "&text=" + text
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -227,10 +223,13 @@ func main() {
 
 	//ROUTES
 	e.GET("/", hello)
-	e.GET("/getBarris", server.getBarris)
-	e.POST("/addBarri", server.addBarri)
-	e.POST("/updateBarri", server.updateBarri)
-	e.GET("/getBarriChannel/:barri", server.getBarriChannel)
+	e.GET("/barris", server.getBarris)
+	e.POST("/barris", server.addBarri)
+	//e.POST("/updateBarri", server.updateBarri)
+	e.PUT("/barris/:barri", server.updateBarri)
+
+	e.GET("/barris/:barri/channel", server.getBarriChannel)
+
 	e.GET("/getChatMember/:channel", getChatMember)
 	e.GET("/sendTelegramMessage/:channel", sendTelegramMessage)
 	e.Logger.Fatal(e.Start(":1323"))

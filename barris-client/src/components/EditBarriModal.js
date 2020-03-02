@@ -13,8 +13,7 @@ const EditBarriModal = (props) => {
     const editBarri = () => {
       const barriName = props.barriEdited.name
       const url = document.getElementById('modalEditUrl').value
-      const token = document.getElementById('modalEditTelegramToken').value
-      axios.post(endpoint+"/updateBarri?name="+barriName+"&url="+url+"&telegramToken="+token)
+      axios.post(endpoint+"/updateBarri?name="+barriName+"&url="+url)
       .then(res => {
           console.log(res.data.name);
           alert('Barri '+res.data.name+ " recibido en el server")
@@ -43,8 +42,8 @@ const EditBarriModal = (props) => {
               <Form.Control type="text" defaultValue={props.barriEdited.url} id="modalEditUrl"/>
             </Form.Group>
             <Form.Group>
-              <Form.Label>Token</Form.Label>
-              <Form.Control type="text" defaultValue={props.barriEdited.telegramToken} id="modalEditTelegramToken"/>
+              <Form.Label>Canal de Telegram: {props.barriEdited.telegramChannelId}</Form.Label>
+              {/* <Form.Control type="text" defaultValue={props.barriEdited.telegramChannelId} id="modalEditTelegramToken"/> */}
             </Form.Group>
           </Form>
         </Modal.Body>

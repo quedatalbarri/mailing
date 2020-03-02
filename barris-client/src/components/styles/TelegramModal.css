@@ -1,0 +1,8 @@
+.qb-steps h3 {
+    display: flex;
+}
+.qb-steps hr {
+    flex: auto;
+    margin-left: 10px;
+    margin-right: 10px;
+}

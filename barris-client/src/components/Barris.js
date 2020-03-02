@@ -55,7 +55,7 @@ const Barris = () => {
 
   const getBarris = () => {
     setLoadingBarris(true)
-    axios.get(endpoint+"/getBarris")
+    axios.get(endpoint+"/barris")
     .then(res => {
         console.log(res.data.barris)
         const listItems = res.data.barris.map((b) => {

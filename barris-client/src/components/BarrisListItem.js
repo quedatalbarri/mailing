@@ -16,7 +16,7 @@ const BarrisListItem = (props) => {
                                 props.showTelegramModal()}
                             }
                         >
-                        Añadir Telegram
+                        Conectar con Telegram
                     </Button>
                     }
                     <FiEdit color="grey"

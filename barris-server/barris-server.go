@@ -113,6 +113,12 @@ type Result struct {
 	Status string
 }
 
+type MessageSent struct {
+	Ok   bool `json:"ok"`
+	Date string
+	Text string
+}
+
 func getChatMember(c echo.Context) error {
 	//loading enviroment variables
 	errEnv := godotenv.Load(".env")
@@ -167,6 +173,30 @@ func (s *Server) getBarriChannel(c echo.Context) error {
 
 }
 
+func sendTelegramMessage(c echo.Context) error {
+	//loading enviroment variables
+	errEnv := godotenv.Load(".env")
+	if errEnv != nil {
+		log.Fatalf("Error loading .env file")
+	}
+	channelName := c.Param("channel")
+	var url = "https://api.telegram.org/bot" + os.Getenv("TELEGRAM_TOKEN") + "/sendMessage?chat_id=@" + channelName + "&text=hols"
+
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println("error")
+	}
+	defer resp.Body.Close()
+	decoder := json.NewDecoder(resp.Body)
+	var messageSent MessageSent
+	err = decoder.Decode(&messageSent)
+	if err != nil {
+		fmt.Println("error")
+	}
+	fmt.Println("ok: ", messageSent.Ok, ", text: ", messageSent.Text)
+	return c.JSON(http.StatusCreated, messageSent)
+}
+
 func connectToDatabase() *sql.DB {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
@@ -200,7 +230,8 @@ func main() {
 	e.GET("/getBarris", server.getBarris)
 	e.POST("/addBarri", server.addBarri)
 	e.POST("/updateBarri", server.updateBarri)
-	e.GET("/getChatMember/:channel", getChatMember)
 	e.GET("/getBarriChannel/:barri", server.getBarriChannel)
+	e.GET("/getChatMember/:channel", getChatMember)
+	e.GET("/sendTelegramMessage/:channel", sendTelegramMessage)
 	e.Logger.Fatal(e.Start(":1323"))
 }

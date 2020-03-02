@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -29,10 +30,10 @@ type Barri struct {
 	Email             string `json:"email"`
 }
 
-var (
-	name string
-	url  string
-)
+// var (
+// 	name string
+// 	url  string
+// )
 
 type Barris struct {
 	Barris []Barri `json:"barris"`
@@ -170,15 +171,24 @@ func (s *Server) getBarriChannel(c echo.Context) error {
 		fmt.Println(result)
 	}
 	return c.JSON(http.StatusCreated, result)
+}
 
+type ChannelMessage struct {
+	Text  string `json:"text"`
+	Barri string `json:"barri"`
 }
 
 func sendTelegramMessage(c echo.Context) error {
 	channelName := c.Param("channel")
-	text := c.QueryParam("text")
-	var url = "https://api.telegram.org/bot" + os.Getenv("TELEGRAM_TOKEN") + "/sendMessage?chat_id=@" + channelName + "&text=" + text
+	msg := new(ChannelMessage)
+	err1 := c.Bind(msg)
+	if err1 != nil {
+		fmt.Println("error")
+	}
+	fmt.Println(msg)
+	var sendMessageUrl = "https://api.telegram.org/bot" + os.Getenv("TELEGRAM_TOKEN") + "/sendMessage?chat_id=@" + channelName + "&text=" + url.QueryEscape(msg.Text) + "&parse_mode=Markdown"
 
-	resp, err := http.Get(url)
+	resp, err := http.Get(sendMessageUrl)
 	if err != nil {
 		fmt.Println("error")
 	}
@@ -231,6 +241,6 @@ func main() {
 	e.GET("/barris/:barri/channel", server.getBarriChannel)
 
 	e.GET("/getChatMember/:channel", getChatMember)
-	e.GET("/sendTelegramMessage/:channel", sendTelegramMessage)
+	e.POST("/sendTelegramMessage/:channel", sendTelegramMessage)
 	e.Logger.Fatal(e.Start(":1323"))
 }

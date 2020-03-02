@@ -38,7 +38,7 @@ const Barris = () => {
         const listItems = res.data.barris.map((b) => {
           return <BarrisListItem 
                   name={b.name}
-                  telegramToken={b.telegramToken}
+                  telegramChannel={b.telegramChannelId}
                   url={b.url}
                   setBarriEdited={() => setBarriEdited(b)}
                   showTelegramModal={() => setTelegramModalShow(true)}

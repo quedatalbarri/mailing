@@ -4,14 +4,13 @@ import (
 	"time"
 	"bytes"
 	"io/ioutil"
-	"strconv"
 	"text/template"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/calendar/v3"
 	"golang.org/x/net/context"
     "github.com/hanzoai/gochimp3"
+	"github.com/caarlos0/env/v6"
 	"log"
-	"os"
 )
 
 func getCalendarService() *calendar.Service {
@@ -47,9 +46,8 @@ func getUpcomingEvents(srv *calendar.Service, cal string) (*calendar.Events, err
 }
 
 
-func getChimp() *gochimp3.API {
-	apiKey := os.Getenv("MAILCHIMP_API_KEY")
-	client := gochimp3.New(apiKey)
+func getChimp(key string) *gochimp3.API {
+	client := gochimp3.New(key)
 	return client
 }
 
@@ -59,9 +57,16 @@ type Event struct {
 	Location string `json:"location,omitempty"`
 	HtmlLink string `json:"link,omitempty"`
 	DateTime string `json:"datetime,omitempty"`
+
+	// TODO: Add link to association that created the event???
+	// created by in the calendar... ???
 }
 
+
+
 type Week struct {
+	// que week??
+	// que barri???
 	Events []Event `json:"events,omitempty"`
 }
 
@@ -89,11 +94,6 @@ func MakeEvents(events *calendar.Events) []Event {
 
 func makeEmailContent(events *calendar.Events) *EmailContent {
 	es := MakeEvents(events)
-	// TODO: Get dates and time!
-	// date := item.Start.DateTime
-	// if date == "" {
-		// date = item.Start.Date
-	// }
 
 	metadata := map[string]string{"foo": "barrr"}
 	return &EmailContent{metadata, es}
@@ -108,6 +108,7 @@ func getTemplate(path string, content *EmailContent) string {
 	t.Execute(&out, content)
 	return out.String()
 }
+
 
 func updateCampaign(client *gochimp3.API, campaign string, templatePath string, content *EmailContent) error {
 	html := getTemplate(templatePath, content)
@@ -132,7 +133,7 @@ func createCampaign(client *gochimp3.API, listId string, segmentId int) (*gochim
 }
 
 
-func sendEmail(client *gochimp3.API, listId string, segmentId int, templatePath string, content *EmailContent) (bool, error) {
+func emailer(client *gochimp3.API, listId string, segmentId int, templatePath string, content *EmailContent) (bool, error) {
 
 	campaign, err := createCampaign(client, listId, segmentId)
 
@@ -149,21 +150,34 @@ func sendEmail(client *gochimp3.API, listId string, segmentId int, templatePath 
 }
 
 
-func main(){
-	cal := os.Getenv("ABEJA_CALENDAR")
-	templatePath := os.Getenv("ABEJA_TEMPLATE")
-	listId := os.Getenv("ABEJA_LIST_ID")
-	segmentId, err := strconv.Atoi(os.Getenv("ABEJA_SEGMENT_ID"))
-	if err != nil {
-		log.Fatal(err)
+type Config struct {
+	Calendar string `env:"ABEJA_CALENDAR,required"`
+	TemplatePath string `env:"ABEJA_TEMPLATE,required"`
+	ListID string `env:"ABEJA_LIST_ID,required"`
+	SegmentID int `env:"ABEJA_SEGMENT_ID,required"`
+	MailchimpKey string `env:"MAILCHIMP_API_KEY,required"`
+}
+
+func getConfig() Config {
+	cfg := Config{}
+	if err := env.Parse(&cfg); err != nil {
+		panic(err)
 	}
+	return cfg
+}
 
-	srv := getCalendarService()
-	client := getChimp()
-	events, err := getUpcomingEvents(srv, cal)
+func sendEmail(cnf Config, events *calendar.Events) (bool, error){
+	client := getChimp(cnf.MailchimpKey)
 	content := makeEmailContent(events)
+	return emailer(client, cnf.ListID, cnf.SegmentID, cnf.TemplatePath, content)
+}
 
-	sent, err := sendEmail(client, listId, segmentId, templatePath, content)
+func main(){
+	cnf := getConfig()
+	srv := getCalendarService()
+	events, err := getUpcomingEvents(srv, cnf.Calendar)
+	sent, err := sendEmail(cnf, events)
+
 	if err != nil {
 		log.Fatal(err)
 	}

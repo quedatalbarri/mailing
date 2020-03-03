@@ -1,3 +1,7 @@
+.qb-steps {
+    margin: 0 10px !important; 
+}
+
 .qb-steps h3 {
     display: flex;
 }
@@ -5,4 +9,12 @@
     flex: auto;
     margin-left: 10px;
     margin-right: 10px;
+}
+
+.qb-modal {
+    font-size: 0.82rem;
+}
+
+.qb-telegram-icon {
+    margin: -5px 10px;
 }

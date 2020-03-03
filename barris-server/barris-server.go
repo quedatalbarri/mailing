@@ -24,16 +24,13 @@ const (
 )
 
 type Barri struct {
-	Name              string `json:"name"`
-	Url               string `json:"url"`
-	TelegramChannelId string `json:"telegramChannelId"`
-	Email             string `json:"email"`
+	Domain            string         `json:"domain"`
+	NameObj           sql.NullString `json:"nameObj"`
+	Name              *string        `json:"name"`
+	Url               string         `json:"url"`
+	TelegramChannelId string         `json:"telegramChannelId"`
+	Email             string         `json:"email"`
 }
-
-// var (
-// 	name string
-// 	url  string
-// )
 
 type Barris struct {
 	Barris []Barri `json:"barris"`
@@ -48,27 +45,34 @@ func (s *Server) addBarri(c echo.Context) error {
 	if err := c.Bind(b); err != nil {
 		return err
 	}
-	fmt.Println("Add Barri: ", b.Name, " Url: ", b.Url, " b.TelegramChannelId: ", b.TelegramChannelId, " Email: ", b.Email)
-	addBarriToDB(b.Name, b.Url, b.TelegramChannelId, b.Email, s.DB)
-	return c.JSON(http.StatusCreated, b)
-}
-
-func addBarriToDB(name string, url string, telegramChannelId string, email string, db *sql.DB) {
-	sqlStatement := "INSERT INTO barris (name, url, telegram_channel, admin) VALUES ($1, $2, $3, $4)"
-	res, err := db.Query(sqlStatement, name, url, telegramChannelId, email)
+	fmt.Println("Add Barri: ", b.Domain, " ", b.Name, " Url: ", b.Url, " b.TelegramChannelId: ", b.TelegramChannelId, " Email: ", b.Email)
+	//addBarriToDB(b.Name, b.Url, b.TelegramChannelId, b.Email, s.DB)
+	sqlStatement := "INSERT INTO barris (domain, name, url, telegram_channel, admin) VALUES ($1, $2, $3, $4, $5)"
+	res, err := s.DB.Query(sqlStatement, b.Domain, b.Name, b.Url, b.TelegramChannelId, b.Email)
 	if err != nil {
 		fmt.Println(err)
 	} else {
 		fmt.Println(res)
 	}
+	return c.JSON(http.StatusCreated, b)
 }
+
+// func addBarriToDB(name string, url string, telegramChannelId string, email string, db *sql.DB) {
+// 	sqlStatement := "INSERT INTO barris (name, url, telegram_channel, admin) VALUES ($1, $2, $3, $4)"
+// 	res, err := db.Query(sqlStatement, name, url, telegramChannelId, email)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	} else {
+// 		fmt.Println(res)
+// 	}
+// }
 
 func (s *Server) getBarris(c echo.Context) error {
 	email := c.QueryParam("email")
 	fmt.Println("getBarris del usuario con email : ", email)
-	sqlStatement := "SELECT name, url, telegram_channel FROM barris"
+	sqlStatement := "SELECT domain, name, url, telegram_channel FROM barris"
 	if email != "" {
-		sqlStatement = "SELECT name, url, telegram_channel FROM barris WHERE admin = '" + email + "'"
+		sqlStatement = "SELECT domain, name, url, telegram_channel FROM barris WHERE admin = '" + email + "'"
 	}
 
 	rows, err := s.DB.Query(sqlStatement)
@@ -80,12 +84,14 @@ func (s *Server) getBarris(c echo.Context) error {
 
 	for rows.Next() {
 		aBarri := Barri{}
-		err := rows.Scan(&aBarri.Name, &aBarri.Url, &aBarri.TelegramChannelId)
+		err := rows.Scan(&aBarri.Domain, &aBarri.NameObj, &aBarri.Url, &aBarri.TelegramChannelId)
 		if err != nil {
 			log.Fatal(err)
 		}
+		aBarri.Name = &aBarri.NameObj.String
+
 		result.Barris = append(result.Barris, aBarri)
-		fmt.Println(result)
+
 	}
 	return c.JSON(http.StatusCreated, result)
 }
@@ -95,8 +101,8 @@ func (s *Server) updateBarri(c echo.Context) error {
 	if err := c.Bind(b); err != nil {
 		return err
 	}
-	sqlStatement := "UPDATE barris SET url=$1, telegram_channel=$2 WHERE name=$2;"
-	res, err := s.DB.Query(sqlStatement, b.Url, b.TelegramChannelId, b.Name)
+	sqlStatement := "UPDATE barris SET url=$1, telegram_channel=$2 WHERE domain=$2;"
+	res, err := s.DB.Query(sqlStatement, b.Url, b.TelegramChannelId, b.Domain)
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -147,12 +153,12 @@ func getChatMember(c echo.Context) error {
 }
 
 func (s *Server) getBarriChannel(c echo.Context) error {
-	barriName := c.Param("barri")
+	barriDomain := c.Param("barri")
 	//barriName := c.QueryParam("barri")
 	// if barriName == "" {
 	// 	return
 	// }
-	sqlStatement := "SELECT name, telegram_channel FROM barris WHERE name = '" + barriName + "'"
+	sqlStatement := "SELECT domain, telegram_channel FROM barris WHERE domain = '" + barriDomain + "'"
 
 	rows, err := s.DB.Query(sqlStatement)
 	if err != nil {
@@ -163,7 +169,7 @@ func (s *Server) getBarriChannel(c echo.Context) error {
 
 	for rows.Next() {
 		aBarri := Barri{}
-		err := rows.Scan(&aBarri.Name, &aBarri.TelegramChannelId)
+		err := rows.Scan(&aBarri.Domain, &aBarri.TelegramChannelId)
 		if err != nil {
 			log.Fatal(err)
 		}

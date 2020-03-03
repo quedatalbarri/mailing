@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import axios from 'axios'
 import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
@@ -9,11 +9,11 @@ const endpoint = config.serverEndpoint
 
 
 const EditBarriModal = (props) => {
-
+  const [barriName, setBarriName] = useState(null)
+  const [url, setUrl] = useState(null)
     const editBarri = () => {
-      const barriName = props.barriEdited.name
-      const url = document.getElementById('modalEditUrl').value
-      axios.post(endpoint+"/updateBarri?name="+barriName+"&url="+url)
+      const barriDomain = props.barriEdited.domain
+      axios.post(endpoint+"/updateBarri?domain="+barriDomain+"&url="+url)
       .then(res => {
           console.log(res.data.name);
           alert('Barri '+res.data.name+ " recibido en el server")
@@ -32,19 +32,22 @@ const EditBarriModal = (props) => {
       >
         <Modal.Header closeButton>
           <Modal.Title id="contained-modal-title-vcenter">
-            {props.barriEdited.name} - Editar
+            {props.barriEdited.domain} - Editar
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
             <Form.Group>
-              <Form.Label>Url</Form.Label>
-              <Form.Control type="text" defaultValue={props.barriEdited.url} id="modalEditUrl"/>
+                <Form.Label>Nom</Form.Label>
+                <Form.Control type="text" defaultValue={props.barriEdited.name} value={barriName} onChange={(e) => setBarriName(e.target.value)}/>
             </Form.Group>
             <Form.Group>
-              <Form.Label>Canal de Telegram: {props.barriEdited.telegramChannelId}</Form.Label>
-              {/* <Form.Control type="text" defaultValue={props.barriEdited.telegramChannelId} id="modalEditTelegramToken"/> */}
+                <Form.Label>Url</Form.Label>
+                <Form.Control type="text" defaultValue={props.barriEdited.url} value={url} onChange={(e) => setUrl(e.target.value)}/>
             </Form.Group>
+            {/* <Form.Group>
+              <Form.Label>Canal de Telegram: {props.barriEdited.telegramChannelId}</Form.Label>
+            </Form.Group> */}
           </Form>
         </Modal.Body>
         <Modal.Footer>

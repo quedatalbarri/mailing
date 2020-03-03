@@ -5,6 +5,7 @@ import Button from 'react-bootstrap/Button'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Modal from 'react-bootstrap/Modal'
+import telegramLogo from '../images/telegram-logo.png';
 import './styles/Barris.css'
 import './styles/TelegramModal.css'
 const config = require('../config.json')
@@ -14,22 +15,10 @@ const endpoint = config.serverEndpoint
 const TelegramModal = (props) => {
 
     const [channel, setChannel] = useState(null)
-    const saveBarriChannel = (channel) => {
-      const barriName = props.barriName
-      if(channel === "") return alert("No puede dejar el campo canal vacío")
-      axios.post(endpoint+"/updateBarriChannel?name="+barriName+"&TelegramChannelId="+channel)
-      .then(res => {
-          console.log(res.data.name);
-          alert('Barri '+res.data.name+ " recibido en el server")
-          props.onHide()
-      })
-      .catch(error => {
-          alert(error.message)
-      }) 
-    }
+
     const validateBotInChannel = (e) => {
       e.preventDefault()
-      if(channel === "" || !channel) return alert("Has dejado el campo canal vacío")
+      if(channel === "" || !channel) return alert("Introdueix el canal")
       axios.get(endpoint+"/getChatMember/"+channel)
       .then(res => {
           console.log(res.data)
@@ -53,17 +42,34 @@ const TelegramModal = (props) => {
       }) 
     }
 
+    const saveBarriChannel = (channel) => {
+      const barriDomain = props.barriDomain
+      const barriName = props.barriName
+      if(channel === "") return alert("No puede dejar el campo canal vacío")
+      axios.put(endpoint+"/barris?domain="+barriDomain+"&TelegramChannelId="+channel)
+      .then(res => {
+          console.log(res.data.name);
+          alert('Barri '+res.data.name+ " recibido en el server")
+          props.onHide()
+      })
+      .catch(error => {
+          alert(error.message)
+      }) 
+    }
+
     return (
         <Modal
         {...props}
         size="lg"
         aria-labelledby="contained-modal-title-vcenter"
         centered
+        className="qb-modal"
       >
         <Modal.Header closeButton>
           <Modal.Title id="contained-modal-title-vcenter">
-            {props.barriName} - Telegram
+            {props.barriName} - Telegram 
           </Modal.Title>
+          <img src={telegramLogo} alt="Logo" className="qb-telegram-icon" width={45} height={45} />
         </Modal.Header>
           <Fragment>
             <Modal.Body>
@@ -77,7 +83,7 @@ const TelegramModal = (props) => {
                   <h3>2<hr/></h3>
                   <Form.Group>
                     <Form.Label>Indicanos el nombre del canal que has creado.</Form.Label>
-                    <Form.Control type="text" placeholder={"ej: quedatal"+props.barriName} value={channel} onChange={(e) => setChannel(e.target.value)}/>
+                    <Form.Control type="text" placeholder={"ej: quedatal"+props.barriDomain} value={channel} onChange={(e) => setChannel(e.target.value)}/>
                   </Form.Group>
                 </Col>
                 <Col>

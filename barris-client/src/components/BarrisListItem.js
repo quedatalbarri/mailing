@@ -8,25 +8,27 @@ const BarrisListItem = (props) => {
     return(
         <ListGroup.Item>
               <div class="d-flex w-100 justify-content-between">
-                {props.name}
-                <div>
-                    {!props.telegramChannel && 
-                        <Button variant="outline-primary" size="sm" className="qb-list-btn" onClick={() => {
-                                props.setBarriEdited()
-                                props.showTelegramModal()}
-                            }
-                        >
-                        Conectar con Telegram
-                    </Button>
-                    }
-                    <FiEdit color="grey"
-                        onClick={() => {
-                            props.setBarriEdited()
-                            props.showEditBarriModal()}
+                <div><b>{props.domain}</b> <span className="qb-name-barri">{props.name}</span></div>
+                {props.setBarriEdited &&
+                    <div>
+                        {!props.telegramChannel && 
+                            <Button variant="outline-primary" size="sm" className="qb-list-btn" onClick={() => {
+                                    props.setBarriEdited()
+                                    props.showTelegramModal()}
+                                }
+                            >
+                            Conectar con Telegram
+                        </Button>
                         }
-                        className="qb-edit-icon"
-                    />
-                </div>
+                        <FiEdit color="grey"
+                            onClick={() => {
+                                props.setBarriEdited()
+                                props.showEditBarriModal()}
+                            }
+                            className="qb-edit-icon"
+                        />
+                    </div>
+                }
               </div>
               <div className="qb-list-url">{props.url}</div>
               {props.telegramChannel && <div className="qb-list-url">Canal Telegram: {props.telegramChannel}</div>}

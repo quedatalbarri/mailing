@@ -32,11 +32,12 @@ const Barris = () => {
 
   const getUserBarris = () => {
     setLoadingUserBarris(true)
-    axios.get(endpoint+"/getBarris?email="+user.email)
+    axios.get(endpoint+"/barris?email="+user.email)
     .then(res => {
         console.log(res.data.barris)
         const listItems = res.data.barris.map((b) => {
           return <BarrisListItem 
+                  domain={b.domain}
                   name={b.name}
                   telegramChannel={b.telegramChannelId}
                   url={b.url}
@@ -59,7 +60,8 @@ const Barris = () => {
     .then(res => {
         console.log(res.data.barris)
         const listItems = res.data.barris.map((b) => {
-            return <ListGroup.Item>{b.name}<div className="qb-list-url">{b.url}</div></ListGroup.Item>
+          return <BarrisListItem domain={b.domain} name={b.name} telegramChannel={b.telegramChannelId} url={b.url}
+        />
         })
         setBarrisList(<ListGroup variant="flush" className="qb-list">{listItems}</ListGroup>)
         setLoadingBarris(false)
@@ -114,6 +116,7 @@ const Barris = () => {
       <TelegramModal
         show={telegramModalShow}
         onHide={() => setTelegramModalShow(false)}
+        barriDomain = {barriEdited.domain}
         barriName = {barriEdited.name}
       />
     </Fragment>

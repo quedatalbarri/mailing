@@ -15,15 +15,16 @@ const endpoint = "http://localhost:1323"
 const NewBarri = (props) => {
 
   const email = props.user.email
-  const [barri, setBarri] = useState(null)
+  const [barriName, setBarriName] = useState(null)
+  const [barriDomain, setBarriDomain] = useState(null)
   const [url, setUrl] = useState(null)
   function handleSubmit(e) {
     e.preventDefault()
-    if(!barri || !url) {
+    if(!barriName || !url) {
         return alert("campo Barri o url vacíos")
     }
-    //axios.post(endpoint+"/addBarri?name="+barri+"&url="+url+"&telegramChannelId="+telegramChannelId+"&email="+email)
-    axios.post(endpoint+"/barris?name="+barri+"&url="+url+"&email="+email)
+    //axios.post(endpoint+"/addBarri?name="+barriName+"&url="+url+"&telegramChannelId="+telegramChannelId+"&email="+email)
+    axios.post(endpoint+"/barris?domain="+barriDomain+"name="+barriName+"&url="+url+"&email="+email)
         .then(res => {
             console.log(res.data.name);
             alert('Barri '+res.data.name+ " recibido en el server")
@@ -37,14 +38,19 @@ const NewBarri = (props) => {
     <Fragment>
       <Card className="qb-card">
         <Card.Body>
-            <Card.Title>Crear barrio</Card.Title>
+            <Card.Title>Crear barri</Card.Title>
             <Form>
                 <Form.Group>
-                    <Form.Label>Barri*</Form.Label>
-                    <Form.Control placeholder="ej: born" value={barri} onChange={(e) => setBarri(e.target.value)}/>
+                    <Form.Label>Nom del barri</Form.Label>
+                    <Form.Control placeholder="ej: El Borne" value={barriName} onChange={(e) => setBarriName(e.target.value)}/>
                 </Form.Group>
                 <Form.Group>
-                    <Form.Label>Url*</Form.Label>
+                    <Form.Label>Domini del barri</Form.Label>
+                    <Form.Control placeholder="ej: born" value={barriDomain} onChange={(e) => setBarriDomain(e.target.value)}/>
+                    <Form.Text className="text-muted">Només pots fer servir lletres</Form.Text>
+                </Form.Group>
+                <Form.Group>
+                    <Form.Label>Url</Form.Label>
                     <Form.Control placeholder="barri_url" value={url} onChange={(e) => setUrl(e.target.value)}/>
                 </Form.Group>
                 {/* <Form.Group>

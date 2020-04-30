@@ -1,16 +1,29 @@
 # Queda't al Barri
 
+## abeja
+
+Go server. 
+Gets data from calendar and sends to mailing list, via mailchimp template
+
 ## apuntat
 
 Is the server that recieves all requests to quedat.barcelona. 
 
 Uses config to redirect users from /:barrio to the url for the mailing sign up list for that barrio
 
-## mailer
+## barris-client
 
-Gets data from calendar and sends to mailing list, via mailchimp template
+React app.
+Administration panel for creating a barri.
+
+## barris-server
+
+Go server
+"barris-client's" backend.
+
 
 ## postgresql
+
 -- Table: public.barris
 
 CREATE TABLE public.barris

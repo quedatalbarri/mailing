@@ -23,6 +23,8 @@ const (
 	dbname   = "quedatalbarri"
 )
 
+var connectionToDB bool = true
+
 type Barri struct {
 	Domain            string         `json:"domain"`
 	NameObj           sql.NullString `json:"nameObj"`
@@ -34,6 +36,10 @@ type Barri struct {
 
 type Barris struct {
 	Barris []Barri `json:"barris"`
+}
+
+func helloNoDatabase(c echo.Context) error {
+	return c.String(http.StatusOK, "Welcome to barri server. No connection with database :(")
 }
 
 func hello(c echo.Context) error {
@@ -209,6 +215,13 @@ func sendTelegramMessage(c echo.Context) error {
 	return c.JSON(http.StatusCreated, messageSent)
 }
 
+func recoverPanicNoDB() {
+	if r := recover(); r != nil {
+		fmt.Println("Recovered recoverPanicNoDB: ", r)
+		connectionToDB = false
+	}
+}
+
 func connectToDatabase() *sql.DB {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
@@ -217,6 +230,7 @@ func connectToDatabase() *sql.DB {
 		log.Fatal(err)
 	}
 
+	defer recoverPanicNoDB()
 	if err = db.Ping(); err != nil {
 		panic(err)
 	} else {
@@ -237,16 +251,21 @@ func main() {
 	// CORS restricted- Allows requests
 	e.Use(middleware.CORS())
 
-	//ROUTES
-	e.GET("/", hello)
-	e.GET("/barris", server.getBarris)
-	e.POST("/barris", server.addBarri)
-	//e.POST("/updateBarri", server.updateBarri)
-	e.PUT("/barris/:barri", server.updateBarri)
+	if !connectionToDB {
+		e.GET("/", helloNoDatabase)
+	} else {
+		//ROUTES
+		e.GET("/", hello)
+		e.GET("/barris", server.getBarris)
+		e.POST("/barris", server.addBarri)
+		//e.POST("/updateBarri", server.updateBarri)
+		e.PUT("/barris/:barri", server.updateBarri)
 
-	e.GET("/barris/:barri/channel", server.getBarriChannel)
+		e.GET("/barris/:barri/channel", server.getBarriChannel)
 
-	e.GET("/getChatMember/:channel", getChatMember)
-	e.POST("/sendTelegramMessage/:channel", sendTelegramMessage)
+		e.GET("/getChatMember/:channel", getChatMember)
+		e.POST("/sendTelegramMessage/:channel", sendTelegramMessage)
+	}
+
 	e.Logger.Fatal(e.Start(":1323"))
 }
